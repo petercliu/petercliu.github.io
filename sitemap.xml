@@ -3,12 +3,24 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>http://petercliu.github.io/categories/</loc>
+    <loc>http://petercliu.github.io/</loc>
+    <lastmod>2019-04-09T10:27:52+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>http://petercliu.github.io/</loc>
+    <loc>http://petercliu.github.io/post/</loc>
+    <lastmod>2019-04-09T10:27:52+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://petercliu.github.io/post/test/</loc>
+    <lastmod>2019-04-09T10:27:52+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://petercliu.github.io/categories/</loc>
     <priority>0</priority>
   </url>
   
