@@ -33,7 +33,18 @@
       audioCtx.decodeAudioData(bytes.buffer, function (buffer) {
         audioBuff = buffer;
          console.log('sound buffer created')
+
+        var sound = audioCtx.createBufferSource();
+        sound.buffer = audioBuff;
+        sound.connect(audioCtx.destination);
+        sound.start(0);
+        sound.stop(0);
+
       });
+
+
+
+
     }
 
     createSound();
