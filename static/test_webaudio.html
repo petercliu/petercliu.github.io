@@ -36,7 +36,8 @@
 
         var sound = this._sound = audioCtx.createBufferSource();
         sound.buffer = audioBuff;
-        sound.connect(audioCtx.destination);
+        var node = sound.connect(audioCtx.destination);
+        console.log('node:' + node)
         sound.loopStart = 0;
         sound.loopEnd = 0.04;
         sound.loop = true;
