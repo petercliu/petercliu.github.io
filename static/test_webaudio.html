@@ -34,17 +34,15 @@
         audioBuff = buffer;
          console.log('sound buffer created')
 
-        var sound = audioCtx.createBufferSource();
+        var sound = this._sound = audioCtx.createBufferSource();
         sound.buffer = audioBuff;
         sound.connect(audioCtx.destination);
+        sound.loopStart = 0;
+        sound.loopEnd = 0.04;
+        sound.loop = true;
         sound.start(0);
-        sound.stop(0);
 
       });
-
-
-
-
     }
 
     createSound();
