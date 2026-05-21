@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proxy Resource Compatibility Test Page</title>
+<meta name="description" content="A page that exercises every common subresource type to test proxy support.">
+
+<!-- ============================================================ -->
+<!--  1. PRECONNECT / DNS-PREFETCH                                -->
+<!-- ============================================================ -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="preconnect" href="https://unpkg.com">
+<link rel="preconnect" href="https://picsum.photos">
+<link rel="dns-prefetch" href="https://imgs.signifyd.com">
+<link rel="dns-prefetch" href="https://s.pxltgr.com">
+<link rel="dns-prefetch" href="https://b.applovin.com">
+<link rel="dns-prefetch" href="https://ingest.quantummetric.com">
+
+<!-- ============================================================ -->
+<!--  2. PRELOAD / PREFETCH / MODULEPRELOAD                       -->
+<!-- ============================================================ -->
+<link rel="preload" as="image" href="https://picsum.photos/seed/preload-hero/1200/600">
+<link rel="preload" as="font" href="https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2" type="font/woff2" crossorigin>
+<link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<link rel="preload" as="script" href="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js">
+<link rel="prefetch" href="https://picsum.photos/seed/prefetch-next-page/300/300">
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm">
+
+<!-- ============================================================ -->
+<!--  3. CSS variants                                             -->
+<!-- ============================================================ -->
+<!-- 3a. external CSS (HTTPS, multiple CDNs) -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/swiper/9.4.1/swiper-bundle.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://unpkg.com/swiper@10/swiper-bundle.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<!-- 3b. inline CSS with @import (proxy must support fetching imported CSS) -->
+<style>@import url("https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css");</style>
+
+<!-- 3c. base styles -->
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font:14px/1.5 Inter,-apple-system,sans-serif;color:#222;background:#fff;padding:16px;max-width:1400px;margin:0 auto}
+section{margin:24px 0;padding:16px;border:1px solid #ddd;border-radius:8px}
+h2{font-family:Playfair Display;color:#7d2027;border-bottom:2px solid #7d2027;padding-bottom:6px;margin-bottom:12px;font-size:20px}
+h3{margin-top:12px;color:#444;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.grid img,.grid video,.grid audio{width:100%;border-radius:4px;background:#f0f0f0;display:block}
+code{font-family:Roboto Mono;font-size:12px;background:#f5f5f5;padding:2px 6px;border-radius:3px}
+.status{display:inline-block;padding:2px 8px;border-radius:3px;font-size:11px;margin-left:6px}
+.ok{background:#d4edda;color:#155724}.fail{background:#f8d7da;color:#721c24}.pending{background:#fff3cd;color:#856404}
+table{width:100%;border-collapse:collapse;margin-top:8px;font-size:13px}
+th,td{padding:6px 8px;border-bottom:1px solid #eee;text-align:left}
+th{background:#f9f9f9}
+</style>
+
+<!-- ============================================================ -->
+<!--  4. WEB APP MANIFEST (.webmanifest)                          -->
+<!-- ============================================================ -->
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Proxy%20Test%22%2C%22start_url%22%3A%22%2F%22%7D">
+
+<!-- ============================================================ -->
+<!--  5. FAVICON variants                                         -->
+<!-- ============================================================ -->
+<link rel="icon" href="https://picsum.photos/seed/favicon/32/32" sizes="32x32">
+<link rel="icon" href="https://picsum.photos/seed/favicon/16/16" sizes="16x16">
+<link rel="apple-touch-icon" href="https://picsum.photos/seed/apple-icon/180/180">
+
+</head>
+<body>
+
+<h1 style="font-family:Playfair Display;color:#7d2027">Proxy Resource Compatibility Test</h1>
+<p style="color:#666">Each section exercises a specific subresource category. Open DevTools / NetLog to verify the proxy lets each one through.</p>
+
+<!-- ============================================================ -->
+<!--  S1. IMAGE FORMATS                                           -->
+<!-- ============================================================ -->
+<section>
+  <h2>S1. Image formats</h2>
+  <div class="grid">
+    <div><img src="https://picsum.photos/seed/img-jpg/200/200.jpg"><h3>JPEG</h3></div>
+    <div><img src="https://picsum.photos/seed/img-png/200/200.png"><h3>PNG</h3></div>
+    <div><img src="https://picsum.photos/seed/img-webp/200/200.webp"><h3>WebP</h3></div>
+    <div><img src="https://www.gstatic.com/webp/gallery/4.sm.webp"><h3>WebP (gstatic)</h3></div>
+    <div><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Heckert_GNU_white.svg/200px-Heckert_GNU_white.svg.png"><h3>PNG via thumb</h3></div>
+    <div><img src="https://upload.wikimedia.org/wikipedia/commons/2/22/Heckert_GNU_white.svg"><h3>SVG (raw)</h3></div>
+    <div><img src="https://media.giphy.com/media/3o7TKsQ8Xb3uM3Ym2k/giphy.gif"><h3>GIF (animated)</h3></div>
+    <div><img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><circle cx='100' cy='100' r='80' fill='%237d2027'/></svg>"><h3>SVG (data URI)</h3></div>
+    <div><img src="https://httpbin.org/image/jpeg"><h3>httpbin JPEG</h3></div>
+    <div><img src="https://httpbin.org/image/png"><h3>httpbin PNG</h3></div>
+    <div><img src="https://httpbin.org/image/webp"><h3>httpbin WebP</h3></div>
+    <div><img src="https://httpbin.org/image/svg"><h3>httpbin SVG</h3></div>
+  </div>
+  <h3>responsive srcset / picture</h3>
+  <picture>
+    <source media="(min-width:800px)" srcset="https://picsum.photos/seed/pic-large/800/300">
+    <source media="(min-width:400px)" srcset="https://picsum.photos/seed/pic-medium/400/200">
+    <img src="https://picsum.photos/seed/pic-small/200/100" alt="picture-fallback">
+  </picture>
+  <img srcset="https://picsum.photos/seed/srcset-1x/300/200 1x, https://picsum.photos/seed/srcset-2x/600/400 2x" src="https://picsum.photos/seed/srcset-default/300/200">
+  <h3>SVG inline <code>&lt;use xlink:href&gt;</code></h3>
+  <svg width="64" height="64"><use xlink:href="https://upload.wikimedia.org/wikipedia/commons/2/22/Heckert_GNU_white.svg#root"></use></svg>
+</section>
+
+<!-- ============================================================ -->
+<!--  S2. FONT FORMATS                                            -->
+<!-- ============================================================ -->
+<section>
+  <h2>S2. Font formats</h2>
+  <p>Google Fonts injects multiple <code>woff2</code> via CSS above. Below force more font types:</p>
+  <style>
+    @font-face{font-family:'TestWoff2';src:url('https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2') format('woff2');}
+    @font-face{font-family:'TestWoff';src:url('https://cdn.jsdelivr.net/gh/google/fonts@main/apache/roboto/static/Roboto-Regular.ttf') format('truetype');}
+    @font-face{font-family:'TestTtf';src:url('https://cdn.jsdelivr.net/npm/@fontsource/roboto@5.0.8/files/roboto-latin-400-normal.woff2') format('woff2');}
+  </style>
+  <p style="font-family:TestWoff2,sans-serif">Sample text — TestWoff2</p>
+  <p style="font-family:TestWoff,serif">Sample text — TestWoff (TTF)</p>
+  <p style="font-family:TestTtf,sans-serif">Sample text — TestTtf</p>
+</section>
+
+<!-- ============================================================ -->
+<!--  S3. JS variants                                             -->
+<!-- ============================================================ -->
+<section>
+  <h2>S3. JavaScript loading variants</h2>
+  <ul>
+    <li>classic sync <code>&lt;script src&gt;</code></li>
+    <li><code>async</code> / <code>defer</code></li>
+    <li><code>type="module"</code> + <code>import</code> / <code>importmap</code></li>
+    <li>dynamic <code>import()</code></li>
+    <li><code>document.createElement('script')</code> 注入</li>
+    <li>Web Worker, Shared Worker</li>
+    <li>WASM (.wasm)</li>
+  </ul>
+</section>
+
+<!-- 3a. classic sync -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+
+<!-- 3b. async / defer -->
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.7/axios.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/swiper/9.4.1/swiper-bundle.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/animejs@3.2.2/lib/anime.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/imagesloaded@5.0.0/imagesloaded.pkgd.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js"></script>
+<script defer src="https://unpkg.com/lazysizes@5.3.2/lazysizes.min.js"></script>
+<script defer src="https://unpkg.com/scrollreveal@4.0.9/dist/scrollreveal.min.js"></script>
+<script defer src="https://unpkg.com/clipboard@2.0.11/dist/clipboard.min.js"></script>
+<script defer src="https://unpkg.com/pace-js@1.2.4/pace.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/4.4.1/chart.umd.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- 3c. importmap + ESM module -->
+<script type="importmap">
+{"imports":{"dayjs":"https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm","mitt":"https://cdn.jsdelivr.net/npm/mitt@3.0.1/+esm"}}
+</script>
+<script type="module">
+import dayjs from 'dayjs';
+import mitt from 'mitt';
+window.__esmReady = true;
+console.log('[ESM] dayjs', dayjs().format(), 'mitt', typeof mitt);
+</script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/+esm"></script>
+
+<!-- 3d. dynamic import() -->
+<script>
+(async () => {
+  try { await import('https://cdn.jsdelivr.net/npm/preact@10.19.3/+esm'); console.log('[dyn] preact ok'); }
+  catch(e){ console.warn('[dyn] preact fail', e); }
+})();
+</script>
+
+<!-- 3e. createElement('script') 注入 -->
+<script>
+const s = document.createElement('script');
+s.src = 'https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js';
+document.head.appendChild(s);
+</script>
+
+<!-- ============================================================ -->
+<!--  S4. Web Worker / Shared Worker / WASM                       -->
+<!-- ============================================================ -->
+<section>
+  <h2>S4. Workers & WASM</h2>
+  <p>Web Worker and WASM exercise different proxy paths (Worker uses fetch, WASM streams).</p>
+  <pre id="worker-out" style="font-size:11px;background:#f5f5f5;padding:8px;max-height:120px;overflow:auto"></pre>
+</section>
+<script>
+// Web Worker via Blob (kicks a worker that fetches a remote script)
+try {
+  const workerCode = `
+    self.addEventListener('message', () => {
+      fetch('https://cdnjs.cloudflare.com/ajax/libs/uuid/9.0.1/esm-browser/index.js')
+        .then(r => r.status).then(s => self.postMessage({type:'fetch', status:s}))
+        .catch(e => self.postMessage({type:'fetch', error:String(e)}));
+    });
+    importScripts('https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js');
+    self.postMessage({type:'imported', has_lodash: typeof _});
+  `;
+  const blob = new Blob([workerCode], {type:'application/javascript'});
+  const w = new Worker(URL.createObjectURL(blob));
+  w.onmessage = e => {
+    const out = document.getElementById('worker-out');
+    if (out) out.textContent += JSON.stringify(e.data) + '\n';
+  };
+  w.postMessage('go');
+} catch(e) { console.warn('worker fail', e); }
+
+// WebAssembly streaming (proxy must allow application/wasm + chunked)
+fetch('https://cdn.jsdelivr.net/gh/AssemblyScript/examples@main/sieve/build/optimized.wasm')
+  .then(r => WebAssembly.instantiateStreaming ? WebAssembly.instantiateStreaming(r) : r.arrayBuffer().then(WebAssembly.instantiate))
+  .then(() => console.log('[wasm] ok'))
+  .catch(e => console.warn('[wasm] fail', e));
+</script>
+
+<!-- ============================================================ -->
+<!--  S5. Video / Audio / Track                                   -->
+<!-- ============================================================ -->
+<section>
+  <h2>S5. Media (video/audio/track)</h2>
+  <video controls width="320" preload="metadata" poster="https://picsum.photos/seed/video-poster/320/180">
+    <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+    <source src="https://upload.wikimedia.org/wikipedia/commons/transcoded/c/c0/Big_Buck_Bunny_4K.webm/Big_Buck_Bunny_4K.webm.480p.vp9.webm" type="video/webm">
+    <track kind="subtitles" srclang="en" src="https://gist.githubusercontent.com/samdutton/ca37f3adaf4e23679957b8083e061177/raw/e19399fbccbc069a2af4266e5120ae6bad62699a/sample.vtt">
+  </video>
+  <audio controls preload="none">
+    <source src="https://commondatastorage.googleapis.com/codeskulptor-demos/DDR_assets/Kangaroo_MusiQue_-_The_Neverwritten_Role_Playing_Game.mp3" type="audio/mpeg">
+    <source src="https://upload.wikimedia.org/wikipedia/commons/c/c8/Example.ogg" type="audio/ogg">
+  </audio>
+</section>
+
+<!-- ============================================================ -->
+<!--  S6. iframe / cross-origin embeds                            -->
+<!-- ============================================================ -->
+<section>
+  <h2>S6. iframes (same / cross origin / sandbox)</h2>
+  <h3>cross-origin (OOPIF)</h3>
+  <iframe src="https://example.com/" width="320" height="120"></iframe>
+  <iframe src="https://www.bing.com/" width="320" height="120" sandbox="allow-same-origin allow-scripts"></iframe>
+  <iframe src="https://httpbin.org/html" width="320" height="120"></iframe>
+  <h3>data: iframe</h3>
+  <iframe src="data:text/html,<h3>inline iframe</h3><script>fetch('https://httpbin.org/get').then(r=>r.text()).catch(()=>0)</script>" width="320" height="80"></iframe>
+</section>
+
+<!-- ============================================================ -->
+<!--  S7. XHR / fetch (CORS, preflight, methods, redirects)       -->
+<!-- ============================================================ -->
+<section>
+  <h2>S7. XHR / fetch (CORS / methods / redirects)</h2>
+  <table id="xhr-table">
+    <thead><tr><th>Test</th><th>Method</th><th>Endpoint</th><th>Result</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</section>
+<script>
+const xhrTests = [
+  ['Simple GET (CORS)',           'GET',     'https://jsonplaceholder.typicode.com/posts/1'],
+  ['Simple POST (CORS)',          'POST',    'https://jsonplaceholder.typicode.com/posts'],
+  ['PUT (preflight required)',    'PUT',     'https://jsonplaceholder.typicode.com/posts/1'],
+  ['PATCH (preflight)',           'PATCH',   'https://jsonplaceholder.typicode.com/posts/1'],
+  ['DELETE (preflight)',          'DELETE',  'https://jsonplaceholder.typicode.com/posts/1'],
+  ['OPTIONS direct',              'OPTIONS', 'https://httpbin.org/anything'],
+  ['HEAD',                        'HEAD',    'https://httpbin.org/get'],
+  ['Custom header (preflight)',   'GET',     'https://httpbin.org/headers'],
+  ['Redirect 302 follow',         'GET',     'https://httpbin.org/redirect/3'],
+  ['Redirect to absolute',        'GET',     'https://httpbin.org/absolute-redirect/2'],
+  ['gzip body',                   'GET',     'https://httpbin.org/gzip'],
+  ['deflate body',                'GET',     'https://httpbin.org/deflate'],
+  ['brotli body',                 'GET',     'https://httpbin.org/brotli'],
+  ['chunked',                     'GET',     'https://httpbin.org/stream/3'],
+  ['SSE (text/event-stream)',     'GET',     'https://httpbin.org/stream/2'],
+  ['JSON',                        'GET',     'https://httpbin.org/json'],
+  ['XML',                         'GET',     'https://httpbin.org/xml'],
+  ['HTTP/1.1 only host',          'GET',     'https://http1.golang.org/'],   // golang test server is h1
+  ['HTTP/2 host',                 'GET',     'https://http2.golang.org/'],
+  ['HTTP/3 host (QUIC)',          'GET',     'https://cloudflare-quic.com/'],
+];
+const tbody = document.querySelector('#xhr-table tbody');
+xhrTests.forEach(([name, method, url], i) => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${name}</td><td><code>${method}</code></td><td><code>${url.slice(0, 60)}</code></td><td><span class="status pending" id="xhr-${i}">pending</span></td>`;
+  tbody.appendChild(tr);
+  const opts = { method, headers: { 'X-Test-Custom': 'proxy-probe' } };
+  if (['POST', 'PUT', 'PATCH'].includes(method)) {
+    opts.body = JSON.stringify({ probe: true });
+    opts.headers['Content-Type'] = 'application/json';
+  }
+  fetch(url, opts).then(r => {
+    const el = document.getElementById('xhr-' + i);
+    el.className = 'status ' + (r.ok ? 'ok' : 'fail');
+    el.textContent = r.status + ' ' + r.statusText;
+  }).catch(e => {
+    const el = document.getElementById('xhr-' + i);
+    el.className = 'status fail';
+    el.textContent = 'NETERR ' + (e.message || '').slice(0, 30);
+  });
+});
+</script>
+
+<!-- ============================================================ -->
+<!--  S8. WebSocket / EventSource                                 -->
+<!-- ============================================================ -->
+<section>
+  <h2>S8. WebSocket / Server-Sent Events</h2>
+  <p>Status: <span id="ws-status" class="status pending">connecting</span> &nbsp; SSE: <span id="sse-status" class="status pending">pending</span></p>
+</section>
+<script>
+try {
+  const ws = new WebSocket('wss://echo.websocket.events');
+  const wsEl = document.getElementById('ws-status');
+  ws.onopen = () => { wsEl.className='status ok'; wsEl.textContent='open'; ws.send('hello'); };
+  ws.onerror = () => { wsEl.className='status fail'; wsEl.textContent='error'; };
+  ws.onmessage = e => { wsEl.className='status ok'; wsEl.textContent='msg: ' + String(e.data).slice(0,20); };
+} catch(e){ console.warn('ws fail', e); }
+
+try {
+  const es = new EventSource('https://stream.wikimedia.org/v2/stream/recentchange');
+  const esEl = document.getElementById('sse-status');
+  es.onopen = () => { esEl.className='status ok'; esEl.textContent='open'; };
+  es.onerror = () => { esEl.className='status fail'; esEl.textContent='error'; es.close(); };
+  setTimeout(() => es.close(), 5000);
+} catch(e){ console.warn('sse fail', e); }
+</script>
+
+<!-- ============================================================ -->
+<!--  S9. Range / large download / Blob                           -->
+<!-- ============================================================ -->
+<section>
+  <h2>S9. Range request / large body</h2>
+  <p>Test: <span id="range-status" class="status pending">pending</span></p>
+</section>
+<script>
+fetch('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', {
+  headers: { 'Range': 'bytes=0-1023' }
+}).then(r => {
+  const el = document.getElementById('range-status');
+  el.className = 'status ' + (r.status === 206 ? 'ok' : 'fail');
+  el.textContent = r.status + ' ' + (r.headers.get('Content-Range') || '');
+}).catch(() => {
+  document.getElementById('range-status').className='status fail';
+  document.getElementById('range-status').textContent='neterr';
+});
+</script>
+
+<!-- ============================================================ -->
+<!--  S10. Beacon / sendBeacon (POST keepalive)                   -->
+<!-- ============================================================ -->
+<section>
+  <h2>S10. Beacon (sendBeacon / keepalive POST)</h2>
+  <p>Status: <span id="beacon-status" class="status pending">pending</span></p>
+</section>
+<script>
+const ok = navigator.sendBeacon('https://httpbin.org/post', new Blob([JSON.stringify({probe:'beacon'})], {type:'application/json'}));
+document.getElementById('beacon-status').className='status ' + (ok ? 'ok' : 'fail');
+document.getElementById('beacon-status').textContent = ok ? 'queued' : 'rejected';
+fetch('https://httpbin.org/post', {method:'POST', body:'keepalive', keepalive:true}).catch(()=>{});
+</script>
+
+<!-- ============================================================ -->
+<!--  S11. Tracking pixels (mirror Wayfair PerimeterX chain)      -->
+<!-- ============================================================ -->
+<section>
+  <h2>S11. Tracking pixels (mirror real PDP analytics chain)</h2>
+  <p>30+ tiny POST/GET to typical RUM / fraud / RTB endpoints.</p>
+</section>
+<script>
+function pixel(url){try{new Image().src=url;}catch(e){}}
+function beacon(url){try{navigator.sendBeacon ? navigator.sendBeacon(url) : pixel(url);}catch(e){}}
+const sku='W010416223', pageUrl=encodeURIComponent(location.href);
+beacon(`https://ingest.quantummetric.com/horizon/wayfair?T=B&u=${pageUrl}&P=8&N=8&S=65426&b=23&z=1`);
+beacon(`https://ingest.quantummetric.com/horizon/wayfair?T=B&u=${pageUrl}&N=16&Q=2&S=2567&b=7&z=1`);
+pixel(`https://imgs.signifyd.com/IngJ5uxqiUzVIRIY?ts=${Date.now()}&sku=${sku}`);
+pixel(`https://imgs.signifyd.com/IngJ5uxqiUzVIRIY?ts=${Date.now()+1}&type=session`);
+for(let i=0;i<8;i++) pixel(`https://s.pxltgr.com/2/2.208.0/859199/BD${i}eqxmgJDGlck3HA/postback?vid=mock-${i}&app_id=PX3Vk96I6i&cv=3`);
+pixel(`https://collector-a.perimeterx.net/api/v2/collector/clientError?app_id=PX3Vk96I6i`);
+beacon(`https://f45ac1494d8ec7ae20b6f6c2f572b986907dac62.appgw.conviva.com/ctp`);
+beacon(`https://retail-client-events-service.salsify.com/events`);
+beacon(`https://b.applovin.com/v1/pixel?sku=${sku}`);
+['gtm','adobe','mparticle','heap','mixpanel','segment','amplitude','sentry','datadog','newrelic','hotjar','fullstory'].forEach((v,i)=>pixel(`https://picsum.photos/seed/track-${v}-${i}/1/1`));
+['fb','google-ads','criteo','tradedesk','pinterest','snap','tiktok','reddit'].forEach((v,i)=>pixel(`https://picsum.photos/seed/conv-${v}-${i}/1/1`));
+</script>
+
+<!-- ============================================================ -->
+<!--  S12. Many similar resources (stress n+1 capacity)           -->
+<!-- ============================================================ -->
+<section>
+  <h2>S12. 100+ images (proxy concurrency / H2 multiplex stress)</h2>
+  <div class="grid" id="stress-grid"></div>
+</section>
+<script>
+const grid = document.getElementById('stress-grid');
+for (let i = 1; i <= 100; i++) {
+  const im = document.createElement('img');
+  im.src = `https://picsum.photos/seed/stress-${i}/120/120`;
+  im.loading = 'lazy';
+  grid.appendChild(im);
+}
+</script>
+
+<!-- ============================================================ -->
+<!--  S13. Mixed content (HTTP fallback)                          -->
+<!--  Note: Modern browsers auto-upgrade or block; included as a  -->
+<!--  proxy-edge case probe.                                      -->
+<!-- ============================================================ -->
+<section>
+  <h2>S13. Mixed-content probe (will be auto-upgraded or blocked)</h2>
+  <img src="http://upload.wikimedia.org/wikipedia/commons/2/22/Heckert_GNU_white.svg" width="40">
+  <iframe src="http://example.org/" width="200" height="60"></iframe>
+</section>
+
+<!-- ============================================================ -->
+<!--  S14. Service Worker                                         -->
+<!-- ============================================================ -->
+<section>
+  <h2>S14. Service Worker (proxy must allow scope fetch)</h2>
+  <p>Registration: <span id="sw-status" class="status pending">pending</span></p>
+</section>
+<script>
+if ('serviceWorker' in navigator) {
+  // Use a data: URI is not allowed for SW; instead probe a registration attempt to a non-existing path
+  navigator.serviceWorker.register('/__not_exist__sw.js').then(() => {
+    document.getElementById('sw-status').className='status ok';
+    document.getElementById('sw-status').textContent='registered';
+  }).catch(e => {
+    document.getElementById('sw-status').className='status fail';
+    document.getElementById('sw-status').textContent=String(e.message||e).slice(0,40);
+  });
+}
+</script>
+
+</body>
+</html>
