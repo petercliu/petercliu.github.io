@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Adblock Strategy Test</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f6f3eb;
+      color: #1f2a24;
+    }
+    main {
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 0 20px 60px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+    }
+    .note {
+      margin: 0 0 24px;
+      color: #5d665f;
+      line-height: 1.5;
+    }
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin: 24px 0;
+    }
+    .card {
+      padding: 16px;
+      border: 1px solid #d6d0c3;
+      border-radius: 14px;
+      background: #fffdf8;
+    }
+    .value {
+      display: block;
+      margin-top: 6px;
+      font-size: 28px;
+      font-weight: 700;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fffdf8;
+      border: 1px solid #d6d0c3;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #ebe5d8;
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+    th {
+      background: #ece4d2;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    code {
+      word-break: break-all;
+      font-size: 12px;
+    }
+    .blocked {
+      color: #986016;
+      font-weight: 700;
+    }
+    .loaded {
+      color: #176b44;
+      font-weight: 700;
+    }
+    .pending {
+      color: #6a6a6a;
+    }
+    .bad {
+      color: #9f2630;
+      font-weight: 700;
+    }
+    @media (max-width: 760px) {
+      .summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      table {
+        display: block;
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Adblock Strategy Test</h1>
+  <p class="note">
+    This page intentionally loads known ad, analytics, RUM, and tracking resources.
+    A successful block strategy should make the “Expected blocked” resources fail,
+    while the “Expected allowed” control resources still load.
+  </p>
+
+  <section class="summary">
+    <div class="card">Total<span class="value" id="total">0</span></div>
+    <div class="card">Expected blocked and failed<span class="value" id="blockedOk">0</span></div>
+    <div class="card">Expected allowed and loaded<span class="value" id="allowedOk">0</span></div>
+    <div class="card">Unexpected result<span class="value bad" id="unexpected">0</span></div>
+  </section>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Expectation</th>
+        <th>Status</th>
+        <th>Vendor</th>
+        <th>URL</th>
+      </tr>
+    </thead>
+    <tbody id="results"></tbody>
+  </table>
+</main>
+
+<script>
+const tests = [
+  { vendor: "Google Ads", expect: "blocked", type: "image", url: "https://googleads.g.doubleclick.net/pagead/viewthroughconversion/123456789/?random=1&guid=ON&script=0" },
+  { vendor: "Facebook Pixel", expect: "blocked", type: "image", url: "https://www.facebook.com/tr?id=123456789&ev=PageView&noscript=1" },
+  { vendor: "NewRelic", expect: "blocked", type: "script", url: "https://js-agent.newrelic.com/nr-spa-1.277.0.min.js" },
+  { vendor: "NewRelic beacon", expect: "blocked", type: "image", url: "https://bam.nr-data.net/1/test?a=1&v=1&t=AdblockTest" },
+  { vendor: "Google Tag Manager", expect: "blocked", type: "script", url: "https://www.googletagmanager.com/gtm.js?id=GTM-TX2GVCC" },
+  { vendor: "Google gtag", expect: "blocked", type: "script", url: "https://www.googletagmanager.com/gtag/js?id=G-TEST1234" },
+  { vendor: "Google AdSense", expect: "blocked", type: "script", url: "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" },
+  { vendor: "Bing Ads", expect: "blocked", type: "script", url: "https://bat.bing.com/bat.js" },
+  { vendor: "Pinterest", expect: "blocked", type: "image", url: "https://ct.pinterest.com/v3/?event=init&tid=test" },
+  { vendor: "TikTok", expect: "blocked", type: "image", url: "https://analytics.tiktok.com/i18n/pixel/events.js?sdkid=TEST" },
+  { vendor: "Snapchat", expect: "blocked", type: "image", url: "https://tr.snapchat.com/p" },
+  { vendor: "Criteo", expect: "blocked", type: "script", url: "https://static.criteo.net/js/ld/ld.js" },
+  { vendor: "Klaviyo", expect: "blocked", type: "script", url: "https://static.klaviyo.com/onsite/js/klaviyo.js?company_id=TEST" },
+  { vendor: "Qualtrics", expect: "blocked", type: "script", url: "https://siteintercept.qualtrics.com/WRSiteInterceptEngine/?Q_ZID=TEST" },
+  { vendor: "Cloudflare Insights control", expect: "allowed", type: "script", url: "https://static.cloudflareinsights.com/beacon.min.js" },
+  { vendor: "Trustpilot control", expect: "allowed", type: "script", url: "https://widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js" }
+];
+
+const state = new Map();
+const tbody = document.getElementById("results");
+
+function addRow(test) {
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td>${test.expect}</td>
+    <td class="pending" data-status>pending</td>
+    <td>${test.vendor}</td>
+    <td><code>${test.url}</code></td>
+  `;
+  tbody.appendChild(tr);
+  state.set(test.url, { test, tr, status: "pending" });
+}
+
+function updateSummary() {
+  let blockedOk = 0;
+  let allowedOk = 0;
+  let unexpected = 0;
+
+  for (const item of state.values()) {
+    if (item.status === "pending") continue;
+    const expectedBlockedOk = item.test.expect === "blocked" && item.status === "error";
+    const expectedAllowedOk = item.test.expect === "allowed" && item.status === "load";
+    if (expectedBlockedOk) blockedOk++;
+    else if (expectedAllowedOk) allowedOk++;
+    else unexpected++;
+  }
+
+  document.getElementById("total").textContent = tests.length;
+  document.getElementById("blockedOk").textContent = blockedOk;
+  document.getElementById("allowedOk").textContent = allowedOk;
+  document.getElementById("unexpected").textContent = unexpected;
+}
+
+function mark(test, status) {
+  const item = state.get(test.url);
+  if (!item || item.status !== "pending") return;
+
+  item.status = status;
+  const statusCell = item.tr.querySelector("[data-status]");
+  const ok = (test.expect === "blocked" && status === "error") ||
+    (test.expect === "allowed" && status === "load");
+
+  statusCell.className = ok ? (status === "error" ? "blocked" : "loaded") : "bad";
+  statusCell.textContent = status === "error" ? "failed / blocked" : "loaded";
+  updateSummary();
+}
+
+function loadTest(test) {
+  addRow(test);
+
+  if (test.type === "script") {
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = test.url;
+    script.onload = () => mark(test, "load");
+    script.onerror = () => mark(test, "error");
+    document.head.appendChild(script);
+    return;
+  }
+
+  const img = new Image();
+  img.onload = () => mark(test, "load");
+  img.onerror = () => mark(test, "error");
+  img.src = test.url;
+}
+
+for (const test of tests) {
+  loadTest(test);
+}
+
+setTimeout(() => {
+  for (const item of state.values()) {
+    if (item.status === "pending") {
+      mark(item.test, "error");
+    }
+  }
+}, 8000);
+
+updateSummary();
+</script>
+</body>
+</html>
