@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Adblock Effect Test</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f6f7f9;
+      color: #15171a;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 18px;
+      background: rgba(255, 255, 255, .95);
+      border-bottom: 1px solid #d9dde3;
+      backdrop-filter: blur(8px);
+    }
+    h1 { margin: 0; font-size: 19px; }
+    main { max-width: 1180px; margin: 0 auto; padding: 18px; }
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(120px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .metric {
+      background: #fff;
+      border: 1px solid #dfe3e8;
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .metric strong { display: block; font-size: 22px; }
+    .metric span { display: block; margin-top: 2px; color: #5b6472; font-size: 12px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border: 1px solid #dfe3e8;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 9px 10px;
+      border-bottom: 1px solid #edf0f3;
+      text-align: left;
+      font-size: 13px;
+      vertical-align: top;
+    }
+    th { background: #f9fafb; color: #4d5663; font-weight: 650; }
+    td.url { word-break: break-all; color: #46515f; }
+    .badge {
+      display: inline-block;
+      min-width: 72px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid #dce1e7;
+      background: #f8fafc;
+      text-align: center;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .loaded { color: #237804; background: #f6ffed; border-color: #b7eb8f; }
+    .blocked, .error, .timeout, .hidden { color: #a8071a; background: #fff1f0; border-color: #ffccc7; }
+    .running { color: #614700; background: #fffbe6; border-color: #ffe58f; }
+    .section-title { margin: 20px 0 10px; font-size: 15px; }
+    .bait-zone {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .bait-zone > div {
+      min-height: 48px;
+      padding: 12px;
+      border: 1px dashed #9aa4b2;
+      border-radius: 8px;
+      background: #fff;
+      color: #4d5663;
+      font-size: 12px;
+    }
+    @media (max-width: 760px) {
+      .summary { grid-template-columns: repeat(2, 1fr); }
+      main { padding: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Adblock Effect Test</h1>
+    <div id="startedAt"></div>
+  </header>
+  <main>
+    <section class="summary">
+      <div class="metric"><strong id="totalCount">0</strong><span>Total tests</span></div>
+      <div class="metric"><strong id="loadedCount">0</strong><span>Loaded</span></div>
+      <div class="metric"><strong id="blockedCount">0</strong><span>Blocked / error / hidden</span></div>
+      <div class="metric"><strong id="runningCount">0</strong><span>Running</span></div>
+    </section>
+
+    <h2 class="section-title">Cosmetic Filter Bait</h2>
+    <section class="bait-zone">
+      <div class="adsbox">class=adsbox</div>
+      <div class="ad-banner">class=ad-banner</div>
+      <div id="ad_container">id=ad_container</div>
+      <div class="adsbygoogle">class=adsbygoogle</div>
+    </section>
+
+    <h2 class="section-title">Network Filter Tests</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Duration</th>
+          <th>URL</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </main>
+
+  <script>
+    const tests = [
+      {
+        name: "Google Tag Manager",
+        type: "script",
+        url: "https://www.googletagmanager.com/gtm.js?id=GTM-TX2GVCC"
+      },
+      {
+        name: "Google gtag",
+        type: "script",
+        url: "https://www.googletagmanager.com/gtag/js?id=G-TEST1234"
+      },
+      {
+        name: "Google adsbygoogle",
+        type: "script",
+        url: "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"
+      },
+      {
+        name: "DoubleClick conversion",
+        type: "img",
+        url: "https://googleads.g.doubleclick.net/pagead/viewthroughconversion/123456789/?random=1&guid=ON&script=0"
+      },
+      {
+        name: "Facebook pixel",
+        type: "img",
+        url: "https://www.facebook.com/tr?id=123456789&ev=PageView&noscript=1"
+      },
+      {
+        name: "Cloudflare beacon",
+        type: "script",
+        url: "https://static.cloudflareinsights.com/beacon.min.js"
+      },
+      {
+        name: "New Relic agent",
+        type: "script",
+        url: "https://js-agent.newrelic.com/nr-spa-1.277.0.min.js"
+      },
+      {
+        name: "New Relic collector",
+        type: "img",
+        url: "https://bam.nr-data.net/1/test?a=1&v=1&t=AdblockTest"
+      },
+      {
+        name: "Trustpilot widget",
+        type: "script",
+        url: "https://widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js"
+      }
+    ];
+
+    const cosmeticTests = [
+      { name: "adsbox element", selector: ".adsbox" },
+      { name: "ad-banner element", selector: ".ad-banner" },
+      { name: "ad_container element", selector: "#ad_container" },
+      { name: "adsbygoogle element", selector: ".adsbygoogle" }
+    ];
+
+    const rowsEl = document.getElementById("rows");
+    const results = [];
+    document.getElementById("startedAt").textContent = new Date().toLocaleString();
+
+    function addRow(result) {
+      results.push(result);
+      const tr = document.createElement("tr");
+      tr.dataset.name = result.name;
+      tr.innerHTML = `
+        <td>${results.length}</td>
+        <td>${escapeHtml(result.name)}</td>
+        <td>${escapeHtml(result.type)}</td>
+        <td><span class="badge ${escapeHtml(result.status)}">${escapeHtml(result.status)}</span></td>
+        <td>${escapeHtml(result.duration || "")}</td>
+        <td class="url">${escapeHtml(result.url || result.selector || "")}</td>
+      `;
+      rowsEl.appendChild(tr);
+      updateSummary();
+    }
+
+    function updateSummary() {
+      const total = results.length;
+      const loaded = results.filter(r => r.status === "loaded").length;
+      const running = results.filter(r => r.status === "running").length;
+      const blocked = total - loaded - running;
+      document.getElementById("totalCount").textContent = total;
+      document.getElementById("loadedCount").textContent = loaded;
+      document.getElementById("blockedCount").textContent = blocked;
+      document.getElementById("runningCount").textContent = running;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function runScriptTest(test) {
+      const started = performance.now();
+      const script = document.createElement("script");
+      script.async = true;
+      script.src = test.url;
+      let done = false;
+      const finish = status => {
+        if (done) return;
+        done = true;
+        addRow({
+          name: test.name,
+          type: test.type,
+          status,
+          duration: `${Math.round(performance.now() - started)}ms`,
+          url: test.url
+        });
+      };
+      script.onload = () => finish("loaded");
+      script.onerror = () => finish("error");
+      setTimeout(() => finish("timeout"), 8000);
+      document.head.appendChild(script);
+    }
+
+    function runImageTest(test) {
+      const started = performance.now();
+      const image = new Image();
+      let done = false;
+      const finish = status => {
+        if (done) return;
+        done = true;
+        addRow({
+          name: test.name,
+          type: test.type,
+          status,
+          duration: `${Math.round(performance.now() - started)}ms`,
+          url: test.url
+        });
+      };
+      image.onload = () => finish("loaded");
+      image.onerror = () => finish("error");
+      setTimeout(() => finish("timeout"), 8000);
+      image.src = test.url;
+    }
+
+    function runCosmeticTests() {
+      setTimeout(() => {
+        for (const test of cosmeticTests) {
+          const el = document.querySelector(test.selector);
+          const rect = el ? el.getBoundingClientRect() : null;
+          const style = el ? getComputedStyle(el) : null;
+          const hidden = !el || !rect || rect.width === 0 || rect.height === 0 ||
+            style.display === "none" || style.visibility === "hidden" || Number(style.opacity) === 0;
+          addRow({
+            name: test.name,
+            type: "cosmetic",
+            status: hidden ? "hidden" : "loaded",
+            duration: "after 500ms",
+            selector: test.selector
+          });
+        }
+      }, 500);
+    }
+
+    for (const test of tests) {
+      addRow({ name: test.name, type: test.type, status: "running", url: test.url });
+      if (test.type === "script") runScriptTest(test);
+      if (test.type === "img") runImageTest(test);
+    }
+
+    // Running rows are placeholders; remove them when final rows arrive.
+    const observer = new MutationObserver(() => {
+      const finalNames = new Set(results.filter(r => r.status !== "running").map(r => `${r.name}:${r.type}`));
+      for (const tr of Array.from(rowsEl.querySelectorAll("tr"))) {
+        const name = tr.dataset.name;
+        const type = tr.children[2]?.textContent;
+        const status = tr.children[3]?.textContent;
+        if (status === "running" && finalNames.has(`${name}:${type}`)) {
+          tr.remove();
+          const idx = results.findIndex(r => r.name === name && r.type === type && r.status === "running");
+          if (idx >= 0) results.splice(idx, 1);
+        }
+      }
+      updateSummary();
+    });
+    observer.observe(rowsEl, { childList: true });
+
+    runCosmeticTests();
+  </script>
+</body>
+</html>
